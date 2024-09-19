@@ -7,7 +7,7 @@ from pywinauto.application import Application
 import win32gui
 
 # Set image path for template
-template_path = 'path_to_image_template.png'
+template_path = 'start.png'
 
 # Function to detect image on the screen
 def detect_and_click_image(template_path):
@@ -83,7 +83,7 @@ def run_detection_cycle(template_path, original_window_title):
         time.sleep(1)
 
 # Get the title of the original window
-original_window = gw.getWindowsWithTitle('Your Original Window Title')[0]
+original_window = gw.getWindowsWithTitle('TelegramDesktop')[0]
 
 # Run the detection loop
 run_detection_cycle(template_path, original_window.title)
