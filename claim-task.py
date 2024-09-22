@@ -4,7 +4,7 @@ import numpy as np
 import time
 
 # Set image path for template
-template_path = 'claim.png'
+template_path = 'claim-asus.png'
 
 # Function to detect and click on all instances of an image
 def detect_and_click_images(template_path):
@@ -50,7 +50,7 @@ def scroll_down():
         print("Reached the bottom of the page, no further scrolling possible")
         return False
     else:
-        pyautogui.scroll(-500)  # Adjust scroll amount dynamically if needed
+        pyautogui.scroll(-100)  # Adjust scroll amount dynamically if needed
         print("Scrolled down")
         return True
 

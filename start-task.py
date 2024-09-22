@@ -3,11 +3,9 @@ import pyautogui
 import numpy as np
 import time
 import pygetwindow as gw
-from pywinauto.application import Application
-import win32gui
 
 # Set image path for template
-template_path = 'start.png'
+template_path = 'start-asus.png'
 
 # Function to detect image on the screen
 def detect_and_click_image(template_path):
@@ -19,9 +17,12 @@ def detect_and_click_image(template_path):
     # Load template image
     template = cv2.imread(template_path, 0)
 
+    # Debug: Save the screenshot to check if it matches the template
+    cv2.imwrite('debug_screenshot.png', screenshot_gray)
+
     # Match template
     res = cv2.matchTemplate(screenshot_gray, template, cv2.TM_CCOEFF_NORMED)
-    threshold = 0.8  # Set a threshold for image matching
+    threshold = 0.7  # Adjust threshold for more sensitivity
     loc = np.where(res >= threshold)
 
     # If image is found, click on the center
@@ -40,30 +41,10 @@ def detect_and_click_image(template_path):
         print("No image found")
         return False
 
-# Function to close browser tab and refocus on the original window
-def close_browser_and_refocus(original_window_title):
-    time.sleep(2)  # Give time for the browser tab to open
-    
-    # Get all windows
-    windows = gw.getWindowsWithTitle('')
-    
-    # Find and close the browser window
-    for window in windows:
-        if 'Google Chrome' in window.title or 'Firefox' in window.title:  # Adjust for your browser
-            print(f"Closing browser window: {window.title}")
-            window.close()
-            break
-    
-    # Refocus on the original window
-    original_window = gw.getWindowsWithTitle(original_window_title)[0]
-    if original_window:
-        original_window.activate()
-        print(f"Refocused on original window: {original_window_title}")
-
 # Function to scroll the window
 def scroll_down():
     # Scroll down using pyautogui
-    pyautogui.scroll(-500)  # Adjust scroll amount as needed
+    pyautogui.scroll(-100)  # Adjust scroll amount as needed
     print("Scrolled down")
 
 # Main function to run the detection and click loop
@@ -73,8 +54,7 @@ def run_detection_cycle(template_path, original_window_title):
         found = detect_and_click_image(template_path)
         
         if found:
-            # Close browser tab and refocus
-            close_browser_and_refocus(original_window_title)
+            print("Image detected and clicked.")
         else:
             # Scroll down if no image found
             scroll_down()
