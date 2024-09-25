@@ -5,7 +5,7 @@ import time
 import pygetwindow as gw
 
 # Set image path for template
-template_path = 'start-asus.png'
+template_path = f"images\\start-asus.png"
 
 # Function to detect image on the screen
 def detect_and_click_image(template_path):
@@ -18,7 +18,7 @@ def detect_and_click_image(template_path):
     template = cv2.imread(template_path, 0)
 
     # Debug: Save the screenshot to check if it matches the template
-    cv2.imwrite('debug_screenshot.png', screenshot_gray)
+    cv2.imwrite(f"images\\debug_screenshot.png", screenshot_gray)
 
     # Match template
     res = cv2.matchTemplate(screenshot_gray, template, cv2.TM_CCOEFF_NORMED)

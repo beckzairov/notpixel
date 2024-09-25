@@ -6,10 +6,10 @@ import pygetwindow as gw
 from pywinauto.application import Application
 
 # Set image paths for button templates
-claim_button_path = 'claim-asus.png'
-verify_button_path = 'verify-asus.png'
-start_button_white_path = 'start-white-asus.png'
-start_button_black_path = 'start-asus.png'
+claim_button_path = f"images\\claim-asus.png"
+verify_button_path = f"images\\verify-asus.png"
+start_button_white_path = f"images\\start-white-asus.png"
+start_button_black_path = f"images\\start-asus.png"
 
 # Function to refocus on the main window if it loses focus
 def refocus_on_main_window(window_title):

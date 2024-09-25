@@ -1,77 +1,141 @@
 import os
-import subprocess
-import psutil
+import cv2
 import time
+import subprocess
+import pyautogui  # For mouse control and screenshots
+import psutil  # To manage processes
+import numpy as np
+import pygetwindow as gw
+from quitWebApp import findAndClick
+from detectAndClick import detectAndClick
+from windowFocus import focus_app_by_executable
 
-# Path to the folder containing the clone directories
-CLONE_FOLDERS_PATH = r"C:\Users\Acer\AppData\Roaming\Business_Partner_Abdul\2) 25 Accounts"
-# Path to the MacroRecorder executable and the macro file
-MACRO_RECORDER_PATH = r"C:\Program Files (x86)\MacroRecorder\MacroRecorder.exe"
-MACRO_FILE = r"C:\blum-macro.mrf"
+ROOT_FOLDER = "D:\\Tgs\\Abd\\5-acc"  # Set your root folder path
+TELEGRAM_LINK = "https://t.me/dogs_ref_group/38"  # The link to open in Telegram
 
-# Function to terminate a specific process (e.g., Telegram.exe, MacroRecorder)
-def kill_process(process_name):
-    found = False
-    for proc in psutil.process_iter(['pid', 'name']):
-        if proc.info['name'].lower() == process_name.lower():
-            found = True
-            proc.kill()
-            print(f"{process_name} terminated.")
-    if not found:
-        print(f"{process_name} not found.")
+def open_telegram(folder_path):
+    """Open telegram.exe from the specified folder."""
+    telegram_path = os.path.join(folder_path, "telegram.exe")
+    subprocess.Popen(telegram_path)
+    time.sleep(5)  # Wait for the application to open
 
-# Function to terminate the MacroRecorder if it stays in the background
-def kill_macro_recorder():
-    kill_process("MacroRecorder.exe")
+# def focus_telegram_window(window_title):
+#     """Focus on the Telegram window."""
+#     window = gw.getWindowsWithTitle(window_title)
+#     if window:
+#         if not window[0].isActive:
+#             print(f"Refocusing on window: {window_title}")
+#             window[0].activate()
+#         return window[0]
+#     return None
 
-# Function to terminate Telegram.exe
-def kill_telegram():
-    kill_process("Telegram.exe")
 
-# Function to open a folder in File Explorer
-def open_folder_in_explorer(folder_path):
-    try:
-        # Open the folder in File Explorer
-        print(f"Opening folder: {folder_path}")
-        subprocess.Popen(f'explorer "{folder_path}"')
-        time.sleep(3)  # Wait for 3 seconds to ensure the window is opened and visible
-    except Exception as e:
-        print(f"Error opening folder in File Explorer: {str(e)}")
+def open_telegram_link(link):
+    """Open the specified Telegram link."""
+    pyautogui.typewrite(link)  # Type the link in the chat input
+    pyautogui.press('enter')    # Press Enter to navigate to the link
+    print("link opened")
+    time.sleep(5)  # Wait for the link to open
 
-# Function to run the macro command in the current directory
-def run_macro_in_folder(folder_path):
-    cmd = f'"{MACRO_RECORDER_PATH}" -play="{MACRO_FILE}"'
-    try:
-        # Open the folder in File Explorer to make sure the macro can detect visual elements
-        open_folder_in_explorer(folder_path)
+# def find_and_click_link(image_path):
+#     """Find and click the link in the Telegram window."""
+#     screenshot = pyautogui.screenshot()  # Capture the screenshot
+#     img_rgb = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)  # Convert to OpenCV format
+#     img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)  # Convert to grayscale
+#     template = cv2.imread(image_path, 0)  # Load the link template
+#     w, h = template.shape[::-1]
 
-        # Run the macro command
-        print(f"Running macro in folder: {folder_path}")
-        subprocess.run(cmd, shell=True)
-        time.sleep(5)  # Increase the wait time to ensure the macro finishes
+#     # Match template
+#     res = cv2.matchTemplate(img_gray, template, cv2.TM_CCOEFF_NORMED)
+#     threshold = 0.8  # Set a threshold for match quality
+#     loc = np.where(res >= threshold)
 
-        # Kill the MacroRecorder after the macro finishes
-        print("Attempting to kill MacroRecorder.exe...")
-        kill_macro_recorder()
+#     for pt in zip(*loc[::-1]):  # Switch columns and rows
+#         pyautogui.click(pt[0] + w // 2, pt[1] + h // 2)  # Click the center of the matched area
+#         print(f"Clicked on link at position: ({pt[0] + w // 2}, {pt[1] + h // 2})")
+#         break  # Click only the first match
 
-        # Kill Telegram.exe after the macro finishes
-        print("Attempting to kill Telegram.exe...")
-        kill_telegram()
 
-    except Exception as e:
-        print(f"Error running macro in {folder_path}: {str(e)}")
+def detect_and_click(image_path, timeout=7):
+    """Detect an image and click on it if found, with retry mechanism."""
+    start_time = time.time()  # Record the starting time
 
-# Main function to iterate through clone folders and run the macro
-def process_clone_folders():
-    # Get all clone folder names in the directory
-    clone_folders = [f for f in os.listdir(CLONE_FOLDERS_PATH) if os.path.isdir(os.path.join(CLONE_FOLDERS_PATH, f))]
+    # Continue trying to find the image until the timeout period is reached
+    while True:
+        # Take a screenshot
+        screenshot = pyautogui.screenshot()
+        img_rgb = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+        img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
+        template = cv2.imread(image_path, 0)  # Load the image to detect
+        w, h = template.shape[::-1]
 
-    for folder in clone_folders:
-        folder_path = os.path.join(CLONE_FOLDERS_PATH, folder)
-        run_macro_in_folder(folder_path)  # Run macro
+        # Match template
+        res = cv2.matchTemplate(img_gray, template, cv2.TM_CCOEFF_NORMED)
+        threshold = 0.8  # Set a threshold for match quality
+        loc = np.where(res >= threshold)
 
-        # Go back to the root directory after running the macro in the current folder
-        time.sleep(1)  # Short pause before proceeding to the next folder
+        # Check if any matches were found
+        if len(loc[0]) > 0:  # If matches are found
+            for pt in zip(*loc[::-1]):
+                # Click the center of the detected image
+                pyautogui.click(pt[0] + w // 2, pt[1] + h // 2)
+                print(f"Clicked on {image_path} at position: ({pt[0] + w // 2}, {pt[1] + h // 2})")
+                return True  # Image was found and clicked, so exit the function
+        else:
+            print(f"Image {image_path} not found. Retrying...")
+
+        # Check if the timeout has been exceeded
+        if time.time() - start_time > timeout:
+            print(f"Timeout reached. {image_path} was not found within {timeout} seconds.")
+            return False  # Exit if the timeout is reached
+
+        time.sleep(0.5)  # Short delay before trying again
+
+def close_application(app_name):
+    """Close an application by name."""
+    for proc in psutil.process_iter(attrs=['pid', 'name']):
+        if proc.info['name'].lower() == app_name.lower():
+            print(f"Terminating {proc.info['name']} with PID: {proc.info['pid']}")
+            proc.terminate()  # Gracefully terminate the process
+            proc.wait()  # Wait for the process to terminate
+            print(f"{proc.info['name']} terminated.")
+            return
+    print(f"No process found with name: {app_name}")
+
+def process_folder(folder_path):
+    """Process a single Telegram clone folder."""
+    open_telegram(folder_path)
+    focus_app_by_executable("telegram.exe")
+
+    # Detect and click on the specified image before opening the link
+    target_image_path = f"images\\cancel.png"  # Path to the image to detect
+    detect_and_click(target_image_path, timeout=5)  # Detect and click the image
+
+    open_telegram_link(TELEGRAM_LINK)  # Open the specified link
+
+    # Find and click the link after it has been opened
+    link_image_path = f"images\\link-to-ref.png"  # Path to the link template image
+    detectAndClick(link_image_path)  # Find and click the link
+    
+    # focus_app_by_executable("telegram.exe")
+    ref_image = f"images\\ref.png"  # Path to the link template image
+    detectAndClick(ref_image)  # Find and click the link
+
+    detect_and_click(f"images\\ok-modal.png", timeout=7)
+
+    findAndClick(f"images\\blum-header.png")
+
+    print("waiting for 5 seconds...")
+    time.sleep(2.5)
+    close_application("telegram.exe")  # Ensure Telegram is closed completely
+
+def process_folders():
+    """Process each Telegram clone folder one by one."""
+    folders = [f for f in os.listdir(ROOT_FOLDER) if os.path.isdir(os.path.join(ROOT_FOLDER, f))]
+    
+    for folder in folders:
+        folder_path = os.path.join(ROOT_FOLDER, folder)
+        process_folder(folder_path)  # Process the folder sequentially
 
 if __name__ == "__main__":
-    process_clone_folders()
+    process_folders()

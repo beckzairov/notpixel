@@ -4,7 +4,7 @@ import numpy as np
 import time
 
 # Set image path for template
-template_path = 'claim-asus.png'
+template_path = f"images\\claim-asus.png"
 
 # Function to detect and click on all instances of an image
 def detect_and_click_images(template_path):
