@@ -1,0 +1,24 @@
+unexpected_images = [
+        os.path.join(images_dir, 'blackscreenwait.png'),
+        os.path.join(images_dir, 'inactive-quit.png'),
+        os.path.join(images_dir, 'promise.png'),
+        os.path.join(images_dir, 'letsgo.png'),
+        os.path.join(images_dir, 'newpixel.png'),
+        os.path.join(images_dir, 'cancel.png'),
+        os.path.join(images_dir, 'flagisflag.png'),
+        # Add more images as needed
+    ]
+
+    377
+    h = 514
+
+
+
+    Must test Not pixel area where mouse clicks test
+
+    Should implement job, auto run script every 10 minutes
+    (monitor whether script is ran through and finished or not)
+    progress.txt like behavior
+
+
+    Multi threading for monitoring everything!!!

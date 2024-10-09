@@ -6,29 +6,35 @@ import pyautogui  # For mouse control and screenshots
 import psutil  # To manage processes
 import numpy as np
 import pygetwindow as gw
-from quitWebApp import findAndClick
+from quitWebApp import quitWebApp
 from detectAndClick import detectAndClick
 from windowFocus import focus_app_by_executable
 
-ROOT_FOLDER = "D:\\Tgs\\Abd\\5-acc"  # Set your root folder path
-TELEGRAM_LINK = "https://t.me/dogs_ref_group/38"  # The link to open in Telegram
+from pixel import *
+
+ROOT_FOLDER = "D:\\Tgs\\Abd\\11acc-13sep"  # Set your root folder path
+TELEGRAM_LINK = "https://t.me/dogs_ref_group/73"  # The link to open in Telegram
+
+def wait_for_image(image_path, timeout=20, interval=0.5):
+    """Wait for an image to appear on screen with a dynamic timeout."""
+    start_time = time.time()  # Record the start time
+
+    while True:
+        if detect_and_click(image_path, timeout=interval):  # Try finding the image every `interval` seconds
+            return True  # Image found and clicked
+        
+        # Check if timeout has been exceeded
+        if time.time() - start_time > timeout:
+            print(f"Timeout reached. {image_path} not found within {timeout} seconds.")
+            return False  # Image not found within the given timeout
+
+        time.sleep(interval)
 
 def open_telegram(folder_path):
     """Open telegram.exe from the specified folder."""
     telegram_path = os.path.join(folder_path, "telegram.exe")
     subprocess.Popen(telegram_path)
-    time.sleep(5)  # Wait for the application to open
-
-# def focus_telegram_window(window_title):
-#     """Focus on the Telegram window."""
-#     window = gw.getWindowsWithTitle(window_title)
-#     if window:
-#         if not window[0].isActive:
-#             print(f"Refocusing on window: {window_title}")
-#             window[0].activate()
-#         return window[0]
-#     return None
-
+    time.sleep(5) 
 
 def open_telegram_link(link):
     """Open the specified Telegram link."""
@@ -36,25 +42,6 @@ def open_telegram_link(link):
     pyautogui.press('enter')    # Press Enter to navigate to the link
     print("link opened")
     time.sleep(5)  # Wait for the link to open
-
-# def find_and_click_link(image_path):
-#     """Find and click the link in the Telegram window."""
-#     screenshot = pyautogui.screenshot()  # Capture the screenshot
-#     img_rgb = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)  # Convert to OpenCV format
-#     img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)  # Convert to grayscale
-#     template = cv2.imread(image_path, 0)  # Load the link template
-#     w, h = template.shape[::-1]
-
-#     # Match template
-#     res = cv2.matchTemplate(img_gray, template, cv2.TM_CCOEFF_NORMED)
-#     threshold = 0.8  # Set a threshold for match quality
-#     loc = np.where(res >= threshold)
-
-#     for pt in zip(*loc[::-1]):  # Switch columns and rows
-#         pyautogui.click(pt[0] + w // 2, pt[1] + h // 2)  # Click the center of the matched area
-#         print(f"Clicked on link at position: ({pt[0] + w // 2}, {pt[1] + h // 2})")
-#         break  # Click only the first match
-
 
 def detect_and_click(image_path, timeout=7):
     """Detect an image and click on it if found, with retry mechanism."""
@@ -115,15 +102,29 @@ def process_folder(folder_path):
 
     # Find and click the link after it has been opened
     link_image_path = f"images\\link-to-ref.png"  # Path to the link template image
-    detectAndClick(link_image_path)  # Find and click the link
+    detectAndClick(link_image_path, cut_top_percentage=30)  # Find and click the link
     
     # focus_app_by_executable("telegram.exe")
     ref_image = f"images\\ref.png"  # Path to the link template image
     detectAndClick(ref_image)  # Find and click the link
 
-    detect_and_click(f"images\\ok-modal.png", timeout=7)
+    detect_and_click(f"images\\ok-modal.png", timeout=5)
+    # time.sleep(3)
+    
+    detect_and_click(f"images\\promise.png", timeout=5)
+    
+    detect_and_click(f"images\\letsgo.png", timeout=2.5)
+    # if not wait_for_image(f"images\\goback.png", timeout=20):
+    #     print("Web app did not load properly. Exiting.")
+    #     return
+    # detect_and_click(f"images\\goback.png", timeout=5)
+    quitWebApp("images\\blankscreenwait.png", "images\\kebapmenu.png")
+    detect_and_click(f"images\\reload.png", timeout=2.5)
 
-    findAndClick(f"images\\blum-header.png")
+
+    random_click_in_window("telegram.exe", detect_and_click_image)
+
+    quitWebApp("images\\notpixel-header.png", "images\\close-webapp.png")
 
     print("waiting for 5 seconds...")
     time.sleep(2.5)

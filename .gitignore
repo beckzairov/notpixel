@@ -1,2 +1,3 @@
 macro/
 venv/
+.env
